@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El reloj y la hora</title>
+<link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/icono.ico">
+<style>
+/* ═══════════════════════════════════════════
+   VARIABLES & RESET
+═══════════════════════════════════════════ */
+:root {
+  --blue-main: #001DFF;
+  --blue-dark: #04032B;
+  --blue-mid:  #1a3a5f;
+  --orange:    #f59e42;
+  --orange-dk: #e67e22;
+  --panel:     #E8EAFF;
+  --green:     #22a94e;
+  --green-dk:  #178a3c;
+  --red:       #dc2626;
+  --white:     #ffffff;
+  --shadow:    0 12px 24px rgba(0,0,0,.12);
+  --radius:    16px;
+  --tr:        .18s ease;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1a3a5f 0%, #0d2340 100%);
+  min-height: 100vh;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 18px 12px 36px;
+}
+
+/* ═══════════════════════════════════════════
+   MAIN CONTAINER
+═══════════════════════════════════════════ */
+.game-container {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 100%; max-width: 640px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════ */
+.screen { display: none; flex-direction: column; align-items: center; }
+.screen.active { display: flex; }
+
+/* ═══════════════════════════════════════════
+   TOP BAR (game screens)
+═══════════════════════════════════════════ */
+.top-bar {
+  width: 100%; background: var(--blue-dark);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; position: relative;
+}
+.top-bar-title {
+  font-size: clamp(.85rem,3vw,1rem); font-weight: 700;
+  color: var(--white); letter-spacing: .4px;
+}
+.timer-pill {
+  font-size: .85rem; font-weight: 700;
+  color: var(--orange); background: rgba(255,255,255,.1);
+  padding: 4px 12px; border-radius: 50px; display: flex; align-items: center; gap: 5px;
+}
+#mute-btn {
+  position: absolute; top: .8rem; right: 4.5rem;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--orange); border: 2px solid var(--white);
+  font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: transform var(--tr); z-index: 10;
+}
+#mute-btn:hover { transform: scale(1.1); }
+
+/* ═══════════════════════════════════════════
+   START SCREEN
+═══════════════════════════════════════════ */
+#startScreen {
+  padding: 0;
+}
+.start-header {
+  width: 100%;
+  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+  padding: 32px 28px 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  position: relative;
+}
+.start-header h1 {
+  font-size: clamp(2rem, 5.2vw, 3.1rem);
+  font-weight: 900; letter-spacing: .5px;
+  color: var(--white); text-align: center;
+  text-shadow: 0 2px 12px rgba(0,29,255,.4);
+}
+.start-header .subtitle {
+  font-size: clamp(1rem, 3.5vw, 1.25rem);
+  color: rgba(255,255,255,.82); text-align: center;
+}
+/* mute on start screen */
+.start-mute {
+  position: absolute; top: .8rem; right: .8rem;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--orange); border: 2px solid var(--white);
+  font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: transform var(--tr); z-index: 10;
+}
+.start-mute:hover { transform: scale(1.1); }
+
+.start-body {
+  width: 100%; padding: 24px 26px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.advice-box {
+  width: 100%;
+  background: var(--panel);
+  border-left: 4px solid var(--orange);
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-size: .97rem; color: var(--blue-dark); line-height: 1.65;
+}
+.advice-box .animo {
+  display: block; text-align: center;
+  font-weight: 700; font-size: 1rem; margin-top: 8px;
+  color: var(--blue-main);
+}
+.highlight-keyword { color: var(--orange); font-weight: 800; }
+
+#playBtn {
+  height: 48px; min-width: 140px;
+  background: var(--orange); color: var(--white);
+  font-family: inherit; font-size: 1.05rem; font-weight: 800;
+  border: none; border-radius: 10px; cursor: pointer;
+  box-shadow: 0 4px 0 var(--orange-dk);
+  transition: transform var(--tr), box-shadow var(--tr), background var(--tr);
+}
+#playBtn:hover { background: var(--orange-dk); transform: translateY(-2px); box-shadow: 0 6px 0 #c96a10; }
+#playBtn:active { transform: translateY(1px); box-shadow: 0 2px 0 var(--orange-dk); }
+
+.start-image {
+  max-width: 300px; width: 100%;
+  display: block; margin: 0 auto;
+}
+
+/* ═══════════════════════════════════════════
+   GAME CARD (shared inner content)
+═══════════════════════════════════════════ */
+.game-content {
+  width: 100%; padding: 20px 20px 22px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+
+/* GAME HEADER inside content */
+.game-header {
+  width: 100%; display: flex; justify-content: space-between; align-items: center;
+}
+.level-badge {
+  font-size: .85rem; font-weight: 800;
+  background: var(--blue-main); color: var(--white);
+  padding: 5px 14px; border-radius: 50px;
+}
+.score-pill {
+  font-size: .85rem; font-weight: 700;
+  background: var(--panel); color: var(--blue-mid);
+  padding: 5px 12px; border-radius: 50px;
+}
+.score-pill strong { color: var(--orange); font-size: 1rem; }
+
+/* PROGRESS DOTS */
+.progress-dots { display: flex; gap: 8px; }
+.dot {
+  width: 13px; height: 13px; border-radius: 50%; background: #dde3ff;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+}
+.dot.correct { background: var(--green); transform: scale(1.15); }
+.dot.wrong   { background: var(--red);   transform: scale(1.1);  }
+.dot.current { background: var(--orange); transform: scale(1.25); box-shadow: 0 0 0 3px rgba(245,158,66,.3); }
+
+/* INSTRUCTION BOX */
+.instruction {
+  width: 100%; font-size: .86rem; font-weight: 700;
+  color: var(--blue-mid); background: var(--panel);
+  border-radius: 10px; padding: 8px 14px; text-align: center;
+  border-left: 3px solid var(--blue-main);
+}
+
+/* ═══════════════════════════════════════════
+   CLOCKS
+═══════════════════════════════════════════ */
+.clock-wrap {
+  display: inline-flex; position: relative;
+  animation: clockPop .45s cubic-bezier(.175,.885,.32,1.275) both;
+}
+@keyframes clockPop {
+  from { transform: scale(.65) rotate(-12deg); opacity: 0; }
+  to   { transform: scale(1)   rotate(0deg);   opacity: 1; }
+}
+.clock-svg, .iclk-svg {
+  filter: drop-shadow(0 6px 18px rgba(0,29,255,.18));
+}
+.iclk-wrap {
+  display: inline-flex; position: relative; cursor: pointer;
+  animation: clockPop .45s cubic-bezier(.175,.885,.32,1.275) both;
+}
+.iclk-hitzone { cursor: pointer; fill: transparent; transition: fill .15s; }
+.iclk-hitzone:hover { fill: rgba(245,158,66,.18); }
+
+/* ═══════════════════════════════════════════
+   DIGITAL DISPLAY
+═══════════════════════════════════════════ */
+.digital-display {
+  font-family: 'Courier New', monospace;
+  font-size: 2.6rem; font-weight: bold;
+  background: #0a0a1a; color: #00ddff;
+  padding: 11px 26px; border-radius: 14px; letter-spacing: 5px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.3), inset 0 2px 8px rgba(0,0,0,.4);
+  text-shadow: 0 0 14px rgba(0,221,255,.7);
+  border: 2px solid rgba(0,221,255,.2);
+}
+
+/* ═══════════════════════════════════════════
+   DIGIT INPUT (Level 1)
+═══════════════════════════════════════════ */
+.digit-group {
+  display: flex; align-items: center; gap: 6px;
+  background: #0a0a1a; padding: 11px 22px; border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.25);
+  border: 2px solid rgba(0,221,255,.2);
+}
+.digit-input {
+  width: 54px; font-family: 'Courier New', monospace; font-size: 2rem;
+  text-align: center; background: transparent; color: #00ddff;
+  border: none; border-bottom: 3px solid rgba(0,221,255,.3); outline: none;
+  caret-color: #00ddff; text-shadow: 0 0 8px rgba(0,221,255,.6);
+}
+.digit-input::placeholder { color: rgba(0,221,255,.2); }
+.digit-sep { color: #00ddff; font-size: 2rem; text-shadow: 0 0 8px rgba(0,221,255,.6); }
+
+/* ═══════════════════════════════════════════
+   TEXT INPUT (Levels 2 & 3)
+═══════════════════════════════════════════ */
+.text-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.text-input {
+  width: 100%; font-family: inherit; font-size: 1.08rem; font-weight: 700;
+  padding: 12px 16px; border: 3px solid #dde3ff; border-radius: 12px;
+  outline: none; color: var(--blue-dark);
+  transition: border-color var(--tr), box-shadow var(--tr);
+  text-align: center; background: #f8f9ff;
+}
+.text-input:focus { border-color: var(--blue-main); box-shadow: 0 0 0 3px rgba(0,29,255,.13); }
+.input-hint { font-size: .75rem; color: #7a8aaa; text-align: center; font-style: italic; }
+
+/* ═══════════════════════════════════════════
+   L4 STATUS LABELS
+═══════════════════════════════════════════ */
+.l4-status { display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.l4-hand-label {
+  font-size: .85rem; font-weight: 800; padding: 5px 13px;
+  border-radius: 50px; display: flex; align-items: center; gap: 5px;
+  border: 2px solid transparent;
+  transition: all var(--tr);
+}
+.l4-hand-label.hour   { background: #f0eeff; color: var(--blue-dark); border-color: #c8c0ff; }
+.l4-hand-label.hour.placed   { background: var(--blue-dark); color: var(--white); border-color: var(--blue-dark); }
+.l4-hand-label.minute { background: #e8f4ff; color: var(--blue-mid); border-color: #b0cce8; }
+.l4-hand-label.minute.placed { background: #1a6fab; color: var(--white); border-color: #1a6fab; }
+.l4-hand-label.next { animation: pulseLbl .9s ease-in-out infinite; }
+@keyframes pulseLbl { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+/* ═══════════════════════════════════════════
+   FEEDBACK
+═══════════════════════════════════════════ */
+.feedback-box {
+  width: 100%; padding: 10px 14px; border-radius: 12px;
+  text-align: center; font-size: .9rem; font-weight: 700;
+  display: none; animation: feedPop .3s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes feedPop { from{transform:scale(.82);opacity:0} to{transform:scale(1);opacity:1} }
+.feedback-box.correct { display:block; background:#dcfce7; color:#15803d; border:2px solid #86efac; }
+.feedback-box.wrong   { display:block; background:#fee2e2; color:#991b1b; border:2px solid #fca5a5; }
+
+/* SHAKE */
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 15%{transform:translateX(-8px)}
+  30%{transform:translateX(8px)}  45%{transform:translateX(-6px)}
+  60%{transform:translateX(6px)}  75%{transform:translateX(-3px)} 90%{transform:translateX(3px)}
+}
+.shake { animation: shake .5s ease; }
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.btn {
+  font-family: inherit; font-weight: 800; font-size: .92rem;
+  padding: 10px 22px; border: none; border-radius: 10px; cursor: pointer;
+  transition: transform var(--tr), box-shadow var(--tr), filter var(--tr);
+}
+.btn:hover  { transform: translateY(-2px); filter: brightness(1.07); }
+.btn:active { transform: translateY(1px);  filter: brightness(.95);  }
+.btn-check { background: var(--green);    color: var(--white); box-shadow: 0 5px 0 var(--green-dk); }
+.btn-check:hover  { box-shadow: 0 8px 0 var(--green-dk); }
+.btn-check:active { box-shadow: 0 2px 0 var(--green-dk); }
+.btn-next  { background: var(--blue-main); color: var(--white); box-shadow: 0 5px 0 #0010aa; }
+.btn-next:hover  { box-shadow: 0 8px 0 #0010aa; }
+.btn-next:active { box-shadow: 0 2px 0 #0010aa; }
+.btn-ghost { background: #eef0ff; color: var(--blue-mid); box-shadow: 0 4px 0 #c8cce8; }
+.btn-ghost:hover { background: #dde3ff; }
+.btn-primary { background: var(--orange); color: var(--white); box-shadow: 0 5px 0 var(--orange-dk); }
+.btn-primary:hover { background: var(--orange-dk); box-shadow: 0 8px 0 #c96a10; }
+.btn-primary:active { box-shadow: 0 2px 0 var(--orange-dk); }
+
+/* ═══════════════════════════════════════════
+   TRAINING BADGES & STREAK
+═══════════════════════════════════════════ */
+.streak-pill {
+  font-size: .85rem; font-weight: 800;
+  background: #fff8e1; color: #b8860b;
+  border: 2px solid #ffe082; padding: 5px 13px; border-radius: 50px;
+}
+.streak-pill span { color: var(--orange); }
+
+/* ═══════════════════════════════════════════
+   FINAL SCREEN
+═══════════════════════════════════════════ */
+#finalScreen {
+  padding: 0;
+}
+.final-header {
+  width: 100%;
+  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+  padding: 28px 24px 22px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.final-header h1 {
+  font-size: clamp(1.8rem,5vw,2.5rem); font-weight: 900;
+  color: var(--white); text-align: center;
+}
+.final-body {
+  width: 100%; padding: 24px 24px 28px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.final-score-wrap { text-align: center; }
+.final-score-label { font-size: 1rem; font-weight: 700; color: var(--blue-mid); }
+.final-score-num {
+  font-size: 5rem; font-weight: 900; line-height: 1;
+  color: var(--blue-main); text-shadow: 0 4px 20px rgba(0,29,255,.2);
+}
+.trophy { font-size: 3rem; display: none; animation: trophyPop .6s cubic-bezier(.175,.885,.32,1.275); }
+@keyframes trophyPop { from{transform:scale(0) rotate(-20deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
+.trophy.show { display: block; }
+.final-msg { font-size: 1.05rem; font-weight: 700; color: var(--blue-mid); text-align: center; }
+.final-pills { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.final-pill {
+  background: var(--panel); border-radius: 50px;
+  padding: 6px 15px; font-weight: 800; font-size: .82rem; color: var(--blue-mid);
+}
+.final-pill strong { color: var(--orange); }
+.final-time {
+  font-size: .9rem; font-weight: 700; color: #7a8aaa;
+  background: #f0f4ff; padding: 6px 18px; border-radius: 50px;
+}
+.final-time span { color: var(--blue-main); }
+.final-credit {
+  font-size: .82rem; color: #9aaccc; text-align: center; margin-top: 2px;
+}
+.school-logo {
+  max-width: 130px; width: 100%;
+  display: block; margin: 0 auto;
+  opacity: .9; mix-blend-mode: multiply;
+}
+
+/* Train buttons on final */
+.train-section-title {
+  font-size: .95rem; font-weight: 800;
+  color: var(--blue-mid); width: 100%; text-align: center;
+}
+.train-buttons { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.train-btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: 12px; border: none; cursor: pointer;
+  font-family: inherit; font-weight: 800; font-size: .88rem;
+  transition: transform var(--tr), box-shadow var(--tr), filter var(--tr);
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+.train-btn:hover  { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 8px 20px rgba(0,0,0,.15); }
+.train-btn:active { transform: translateY(1px); }
+.train-btn-1 { background: linear-gradient(120deg,#6a82ff,#001DFF); color: #fff; }
+.train-btn-2 { background: linear-gradient(120deg,#fbd17a,#f59e42); color: #2a1500; }
+.train-btn-3 { background: linear-gradient(120deg,#5dd9b8,#0d9488); color: #fff; }
+.train-btn-4 { background: linear-gradient(120deg,#c084fc,#7c3aed); color: #fff; }
+.train-icon { font-size: 1.5rem; }
+.train-info { text-align: left; }
+.train-info strong { display: block; font-size: .85rem; }
+.train-info small  { opacity: .82; font-size: .72rem; }
+
+/* ═══════════════════════════════════════════
+   CONFETTI
+═══════════════════════════════════════════ */
+.confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden; }
+.cp { position: absolute; top: -20px; animation: cfall linear forwards; }
+@keyframes cfall { to { transform: translateY(110vh) rotate(900deg); opacity: 0; } }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media (max-width: 500px) {
+  body { padding: 10px 6px 30px; }
+  .start-header { padding: 26px 18px 20px; }
+  .start-body  { padding: 18px 16px 0; }
+  .game-content { padding: 16px 12px 18px; gap: 11px; }
+  .digital-display { font-size: 2.1rem; padding: 9px 18px; }
+  .digit-group { padding: 9px 14px; }
+  .digit-input { width: 46px; font-size: 1.8rem; }
+  .final-score-num { font-size: 4rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="confetti-container" id="confetti-container"></div>
+
+<div class="game-container">
+
+<!-- ══════════════════════════════════════════
+     START SCREEN
+══════════════════════════════════════════ -->
+<div class="screen active" id="startScreen">
+  <div class="start-header">
+    <button class="start-mute" id="mute-btn-start" onclick="toggleSound()" title="Silenciar">🔊</button>
+    <h1>El reloj y la hora</h1>
+    <div class="subtitle">Aprende a leer la hora en distintos tipos de relojes</div>
+  </div>
+  <div class="start-body">
+    <div class="advice-box">
+      Con este juego aprenderás a leer e interpretar la hora en relojes
+      <span class="highlight-keyword">analógicos</span> (manecillas) y
+      <span class="highlight-keyword">digitales</span> (números).
+      <strong class="animo">¡Ánimo!</strong>
+    </div>
+    <button class="btn btn-primary" id="playBtn" onclick="startGame()" style="font-size:1.1rem;padding:12px 44px;">
+      Comenzar
+    </button>
+    <img class="start-image" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Ni%C3%B1os.png" alt="Niños aprendiendo">
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     GAME SCREEN 1 — Analog → Digits
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-level1">
+  <div class="top-bar">
+    <div class="timer-pill" id="timer-pill" style="visibility:hidden">⏱ <span id="timer-val">00:00</span></div>
+    <div class="top-bar-title">El reloj y la hora</div>
+    <button id="mute-btn-game" onclick="toggleSound()" style="width:34px;height:34px;border-radius:50%;background:var(--orange);border:2px solid #fff;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Silenciar">🔊</button>
+  </div>
+  <div class="game-content">
+    <div class="game-header">
+      <div class="level-badge">⏰ Nivel 1</div>
+      <div class="score-pill">Aciertos: <strong id="l1-score">0</strong>/5</div>
+    </div>
+    <div class="progress-dots" id="l1-dots"></div>
+    <div class="instruction">🕐 ¿Qué hora marca el reloj? Escribe los dígitos</div>
+    <div class="clock-wrap" id="l1-clock-wrap">
+      <svg id="l1-clock" class="clock-svg" width="210" height="210" viewBox="0 0 220 220"></svg>
+    </div>
+    <div class="digit-group" id="l1-digit-group">
+      <input class="digit-input" id="l1-h" type="text" maxlength="2" placeholder="HH" inputmode="numeric" autocomplete="off">
+      <span class="digit-sep">:</span>
+      <input class="digit-input" id="l1-m" type="text" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+    </div>
+    <div class="feedback-box" id="l1-feedback"></div>
+    <div class="action-row">
+      <button class="btn btn-check" id="l1-check" onclick="checkLevel1()">✔ Comprobar</button>
+      <button class="btn btn-next" id="l1-next" onclick="nextL1()" style="display:none">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     GAME SCREEN 2 — Analog → Text
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-level2">
+  <div class="top-bar">
+    <div class="timer-pill">⏱ <span id="timer-val2" style="color:var(--orange)">00:00</span></div>
+    <div class="top-bar-title">El reloj y la hora</div>
+    <button onclick="toggleSound()" style="width:34px;height:34px;border-radius:50%;background:var(--orange);border:2px solid #fff;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" id="mute-l2">🔊</button>
+  </div>
+  <div class="game-content">
+    <div class="game-header">
+      <div class="level-badge" style="background:#0d9488">✍️ Nivel 2</div>
+      <div class="score-pill">Aciertos: <strong id="l2-score">0</strong>/5</div>
+    </div>
+    <div class="progress-dots" id="l2-dots"></div>
+    <div class="instruction">🕐 Escribe la hora con palabras (ej: "las tres y cuarto")</div>
+    <div class="clock-wrap" id="l2-clock-wrap">
+      <svg id="l2-clock" class="clock-svg" width="210" height="210" viewBox="0 0 220 220"></svg>
+    </div>
+    <div class="text-wrap">
+      <input class="text-input" id="l2-answer" type="text" placeholder="Escribe la hora con palabras…" autocomplete="off">
+      <div class="input-hint">Ej: "las tres y cuarto", "las doce menos veinte"</div>
+    </div>
+    <div class="feedback-box" id="l2-feedback"></div>
+    <div class="action-row">
+      <button class="btn btn-check" id="l2-check" onclick="checkLevel2()">✔ Comprobar</button>
+      <button class="btn btn-next" id="l2-next" onclick="nextL2()" style="display:none">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     GAME SCREEN 3 — Digital → Text
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-level3">
+  <div class="top-bar">
+    <div class="timer-pill">⏱ <span id="timer-val3" style="color:var(--orange)">00:00</span></div>
+    <div class="top-bar-title">El reloj y la hora</div>
+    <button onclick="toggleSound()" style="width:34px;height:34px;border-radius:50%;background:var(--orange);border:2px solid #fff;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" id="mute-l3">🔊</button>
+  </div>
+  <div class="game-content">
+    <div class="game-header">
+      <div class="level-badge" style="background:#7c3aed">💬 Nivel 3</div>
+      <div class="score-pill">Aciertos: <strong id="l3-score">0</strong>/5</div>
+    </div>
+    <div class="progress-dots" id="l3-dots"></div>
+    <div class="instruction">💻 ¿Cómo se dice esta hora con palabras?</div>
+    <div class="digital-display" id="l3-digital">00:00</div>
+    <div class="text-wrap">
+      <input class="text-input" id="l3-answer" type="text" placeholder="Escribe la hora con palabras…" autocomplete="off">
+      <div class="input-hint">Ej: "las seis y media", "las dos menos cuarto"</div>
+    </div>
+    <div class="feedback-box" id="l3-feedback"></div>
+    <div class="action-row">
+      <button class="btn btn-check" id="l3-check" onclick="checkLevel3()">✔ Comprobar</button>
+      <button class="btn btn-next" id="l3-next" onclick="nextL3()" style="display:none">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     GAME SCREEN 4 — Digital → Interactive Analog
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-level4">
+  <div class="top-bar">
+    <div class="timer-pill">⏱ <span id="timer-val4" style="color:var(--orange)">00:00</span></div>
+    <div class="top-bar-title">El reloj y la hora</div>
+    <button onclick="toggleSound()" style="width:34px;height:34px;border-radius:50%;background:var(--orange);border:2px solid #fff;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" id="mute-l4">🔊</button>
+  </div>
+  <div class="game-content">
+    <div class="game-header">
+      <div class="level-badge" style="background:#7c3aed">🖱️ Nivel 4</div>
+      <div class="score-pill">Aciertos: <strong id="l4-score">0</strong>/5</div>
+    </div>
+    <div class="progress-dots" id="l4-dots"></div>
+    <div class="instruction">💻 Coloca las manillas del reloj para mostrar esta hora</div>
+    <div class="digital-display" id="l4-digital">00:00</div>
+    <div class="l4-status">
+      <div class="l4-hand-label hour next" id="l4-lbl-hour"><span>👆</span> Manilla de horas</div>
+      <div class="l4-hand-label minute" id="l4-lbl-min"><span>—</span> Manilla de minutos</div>
+    </div>
+    <div class="iclk-wrap" id="l4-clock-wrap">
+      <svg id="l4-clock" class="iclk-svg" width="240" height="240" viewBox="0 0 240 240"></svg>
+    </div>
+    <div class="feedback-box" id="l4-feedback"></div>
+    <div class="action-row">
+      <button class="btn btn-ghost" id="l4-reset" onclick="resetL4()">🔄 Reiniciar</button>
+      <button class="btn btn-check" id="l4-check" onclick="checkLevel4()" style="display:none">✔ Comprobar</button>
+      <button class="btn btn-next" id="l4-next" onclick="nextL4()" style="display:none">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FINAL SCREEN
+══════════════════════════════════════════ -->
+<div class="screen" id="finalScreen">
+  <div class="final-header">
+    <h1>El reloj y la hora</h1>
+  </div>
+  <div class="final-body">
+    <div class="final-score-wrap">
+      <div class="final-score-label">Puntuación:</div>
+      <div class="final-score-num" id="final-pts">0</div>
+    </div>
+    <div class="trophy" id="trophy">🏆</div>
+    <div class="final-msg" id="final-msg">¡Buen trabajo! Sigue practicando</div>
+    <div class="final-pills">
+      <div class="final-pill">Nivel 1: <strong id="f-s1">0</strong>/5</div>
+      <div class="final-pill">Nivel 2: <strong id="f-s2">0</strong>/5</div>
+      <div class="final-pill">Nivel 3: <strong id="f-s3">0</strong>/5</div>
+      <div class="final-pill">Nivel 4: <strong id="f-s4">0</strong>/5</div>
+    </div>
+    <div class="final-time">⏱ Tiempo empleado: <span id="final-time">—</span></div>
+
+    <div class="train-section-title">🏋️ Sigue entrenando:</div>
+    <div class="train-buttons">
+      <button class="train-btn train-btn-1" onclick="startTraining(1)">
+        <div class="train-icon">⏰</div>
+        <div class="train-info"><strong>Entrenamiento Nivel 1</strong><small>Reloj analógico → Dígitos (infinito)</small></div>
+      </button>
+      <button class="train-btn train-btn-2" onclick="startTraining(2)">
+        <div class="train-icon">✍️</div>
+        <div class="train-info"><strong>Entrenamiento Nivel 2</strong><small>Reloj analógico → Letras (infinito)</small></div>
+      </button>
+      <button class="train-btn train-btn-3" onclick="startTraining(3)">
+        <div class="train-icon">💬</div>
+        <div class="train-info"><strong>Entrenamiento Nivel 3</strong><small>Reloj digital → Letras (infinito)</small></div>
+      </button>
+      <button class="train-btn train-btn-4" onclick="startTraining(4)">
+        <div class="train-icon">🖱️</div>
+        <div class="train-info"><strong>Entrenamiento Nivel 4</strong><small>Reloj digital → Reloj analógico (infinito)</small></div>
+      </button>
+    </div>
+
+    <button class="btn btn-primary" onclick="goHome()" style="min-width:160px;font-size:1rem;">🏠 Volver al menú</button>
+    <div class="final-credit">Creado por Manuel J. Ventura</div>
+    <img class="school-logo" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Siurot.png" alt="Logo colegio Siurot">
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TRAINING SCREEN
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-training">
+  <div class="top-bar">
+    <div class="timer-pill" style="visibility:hidden">⏱ —</div>
+    <div class="top-bar-title">El reloj y la hora</div>
+    <button onclick="toggleSound()" style="width:34px;height:34px;border-radius:50%;background:var(--orange);border:2px solid #fff;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" id="mute-tr">🔊</button>
+  </div>
+  <div class="game-content">
+    <div class="game-header">
+      <div class="level-badge" id="train-badge">♾️ Entrenamiento</div>
+      <div class="streak-pill">Racha: <span id="streak-val">0</span> 🔥</div>
+    </div>
+    <div class="instruction" id="train-instruction">—</div>
+
+    <div id="train-clock-wrap" class="clock-wrap" style="display:none">
+      <svg id="train-clock" class="clock-svg" width="210" height="210" viewBox="0 0 220 220"></svg>
+    </div>
+    <div id="train-digital-wrap" style="display:none">
+      <div class="digital-display" id="train-digital">00:00</div>
+    </div>
+    <div id="train-digit-wrap" style="display:none">
+      <div class="digit-group" id="train-digit-group">
+        <input class="digit-input" id="train-h" type="text" maxlength="2" placeholder="HH" inputmode="numeric" autocomplete="off">
+        <span class="digit-sep">:</span>
+        <input class="digit-input" id="train-m" type="text" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+      </div>
+    </div>
+    <div id="train-text-wrap" class="text-wrap" style="display:none">
+      <input class="text-input" id="train-answer" type="text" placeholder="Escribe la hora con palabras…" autocomplete="off">
+      <div class="input-hint" id="train-hint"></div>
+    </div>
+    <div id="train-l4-status" class="l4-status" style="display:none">
+      <div class="l4-hand-label hour next" id="train-lbl-hour"><span>👆</span> Manilla de horas</div>
+      <div class="l4-hand-label minute" id="train-lbl-min"><span>—</span> Manilla de minutos</div>
+    </div>
+    <div id="train-iclk-wrap" class="iclk-wrap" style="display:none">
+      <svg id="train-iclk" class="iclk-svg" width="240" height="240" viewBox="0 0 240 240"></svg>
+    </div>
+
+    <div class="feedback-box" id="train-feedback"></div>
+    <div class="action-row">
+      <button class="btn btn-ghost" id="train-l4-reset" onclick="resetTrainL4()" style="display:none">🔄 Reiniciar</button>
+      <button class="btn btn-check" id="train-check" onclick="checkTraining()">✔ Comprobar</button>
+      <button class="btn btn-next" id="train-next" onclick="nextTraining()" style="display:none">Siguiente →</button>
+    </div>
+    <button class="btn btn-ghost" onclick="goToFinal()" style="margin-top:4px;font-size:.85rem">← Volver</button>
+  </div>
+</div>
+
+</div><!-- /game-container -->
+
+<script>
+// ═══ AUDIO ═══
+let soundEnabled = true;
+const SFX = {
+  correcto:   'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Correcto.mp3',
+  error:      'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Error.mp3',
+  completado: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Completado.mp3',
+  victoria:   'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Termin%C3%A9.mp3',
+  tap:        'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Tap.mp3'
+};
+function playSound(n){ if(!soundEnabled)return; try{const a=new Audio(SFX[n]);a.volume=.85;a.play().catch(()=>{});}catch(e){} }
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  const ic=soundEnabled?'🔊':'🔇';
+  ['mute-btn-start','mute-btn-game','mute-l2','mute-l3','mute-l4','mute-tr'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent=ic;
+  });
+}
+
+// ═══ TIMER ═══
+let timerStart=null,timerIv=null,timerSecs=0;
+function startTimer(){
+  timerSecs=0; timerStart=Date.now();
+  document.getElementById('timer-pill').style.visibility='visible';
+  clearInterval(timerIv);
+  timerIv=setInterval(()=>{
+    timerSecs=Math.floor((Date.now()-timerStart)/1000);
+    const fmt=fmtTime(timerSecs);
+    ['timer-val','timer-val2','timer-val3','timer-val4'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.textContent=fmt;
+    });
+  },1000);
+}
+function stopTimer(){ clearInterval(timerIv); }
+function fmtTime(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+
+// ═══ STATE ═══
+const MINS=[0,5,10,15,20,25,30,35,40,45,50,55];
+const MIN_TO_NUM={0:12,5:1,10:2,15:3,20:4,25:5,30:6,35:7,40:8,45:9,50:10,55:11};
+let G={level:1,question:0,scores:[0,0,0,0],results:[[],[],[],[]],curH:0,curM:0,answered:false,trainLevel:1,streak:0};
+let L4={hourPlaced:null,minPlaced:null,mode:'hour'};
+let TrainL4={hourPlaced:null,minPlaced:null,mode:'hour'};
+
+function rndTime(){ return{h:Math.ceil(Math.random()*12),m:MINS[Math.floor(Math.random()*12)]}; }
+function rndTimeSafe(){
+  let t,at=0;
+  do{t=rndTime();at++;}while(at<50&&MIN_TO_NUM[t.m]===t.h);
+  return t;
+}
+
+// ═══ CLOCK DRAWING (passive) ═══
+function drawClock(svgId,hour,minute){
+  const svg=document.getElementById(svgId);
+  const cx=110,cy=110,r=100;
+  const minRad=((minute/60*360-90)*Math.PI/180);
+  const mx=cx+76*Math.cos(minRad),my=cy+76*Math.sin(minRad);
+  let hrFrac=(hour%12)/12+(minute/60)/12;
+  if(minute>=30){const pF=(hour%12)/12,nF=((hour%12)+1)/12,mF=(pF+nF)/2;if(hrFrac>mF)hrFrac=mF;}
+  const hrRad=(hrFrac*360-90)*Math.PI/180;
+  const hx=cx+54*Math.cos(hrRad),hy=cy+54*Math.sin(hrRad);
+  svg.innerHTML=clockBase(cx,cy,r)+
+    `<line x1="${cx}" y1="${cy}" x2="${mx}" y2="${my}" stroke="#1a6fab" stroke-width="3.5" stroke-linecap="round"/>
+     <circle cx="${mx}" cy="${my}" r="4" fill="#1a6fab"/>
+     <line x1="${cx}" y1="${cy}" x2="${hx}" y2="${hy}" stroke="#04032B" stroke-width="7.5" stroke-linecap="round"/>
+     <circle cx="${hx}" cy="${hy}" r="5.5" fill="#04032B"/>
+     <circle cx="${cx}" cy="${cy}" r="9" fill="#f59e42"/>
+     <circle cx="${cx}" cy="${cy}" r="4" fill="#fff"/>`;
+}
+
+function clockBase(cx,cy,r){
+  let h=`<circle cx="${cx+3}" cy="${cy+4}" r="${r}" fill="rgba(0,0,0,.07)"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fdfcf8" stroke="#c8b89a" stroke-width="4"/>
+    <circle cx="${cx}" cy="${cy}" r="${r-5}" fill="none" stroke="#e8d8c0" stroke-width="1.5"/>`;
+  for(let i=1;i<=12;i++){const a=((i/12*360-90)*Math.PI/180);
+    h+=`<line x1="${cx+(r-7)*Math.cos(a)}" y1="${cy+(r-7)*Math.sin(a)}"
+      x2="${cx+(r-18)*Math.cos(a)}" y2="${cy+(r-18)*Math.sin(a)}"
+      stroke="#8899bb" stroke-width="3" stroke-linecap="round"/>`;}
+  for(let i=0;i<60;i++){if(i%5===0)continue;const a=((i/60*360-90)*Math.PI/180);
+    h+=`<line x1="${cx+(r-7)*Math.cos(a)}" y1="${cy+(r-7)*Math.sin(a)}"
+      x2="${cx+(r-13)*Math.cos(a)}" y2="${cy+(r-13)*Math.sin(a)}"
+      stroke="#ccd4e8" stroke-width="1.1" stroke-linecap="round"/>`;}
+  for(let i=1;i<=12;i++){const a=((i/12*360-90)*Math.PI/180);
+    h+=`<text x="${cx+(r-33)*Math.cos(a)}" y="${cy+(r-33)*Math.sin(a)}"
+      text-anchor="middle" dominant-baseline="central"
+      font-family="'Segoe UI',Tahoma,sans-serif" font-size="15" font-weight="800" fill="#04032B">${i}</text>`;}
+  return h;
+}
+
+function animClock(wrapId){
+  const w=document.getElementById(wrapId);w.classList.remove('clock-wrap');void w.offsetWidth;w.classList.add('clock-wrap');
+}
+
+// ═══ INTERACTIVE CLOCK (Level 4) ═══
+function drawInteractiveClock(svgId,l4s,onClickFn){
+  const svg=document.getElementById(svgId);
+  const cx=120,cy=120,r=108;
+  let h=iclockBase(cx,cy,r);
+  if(l4s.hourPlaced!==null){
+    const p=numToXY(l4s.hourPlaced,cx,cy,58);
+    h+=`<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#04032B" stroke-width="8.5" stroke-linecap="round" pointer-events="none"/>
+        <circle cx="${p.x}" cy="${p.y}" r="6.5" fill="#04032B" pointer-events="none"/>`;
+  }
+  if(l4s.minPlaced!==null){
+    const p=numToXY(l4s.minPlaced,cx,cy,84);
+    h+=`<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#1a6fab" stroke-width="3.5" stroke-linecap="round" pointer-events="none"/>
+        <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#1a6fab" pointer-events="none"/>`;
+  }
+  h+=`<circle cx="${cx}" cy="${cy}" r="10" fill="#f59e42" pointer-events="none"/>
+      <circle cx="${cx}" cy="${cy}" r="4.5" fill="#fff" pointer-events="none"/>`;
+  for(let i=1;i<=12;i++){
+    const a=((i/12*360-90)*Math.PI/180);
+    const nx=cx+(r-38)*Math.cos(a),ny=cy+(r-38)*Math.sin(a);
+    let fill='transparent',stroke='none';
+    if(l4s.hourPlaced===i){fill='rgba(4,3,43,.15)';stroke='#04032B';}
+    else if(l4s.minPlaced===i){fill='rgba(26,111,171,.15)';stroke='#1a6fab';}
+    h+=`<circle cx="${nx}" cy="${ny}" r="20" fill="${fill}" stroke="${stroke}" stroke-width="2" class="iclk-hitzone" data-num="${i}" style="cursor:pointer"/>`;
+  }
+  svg.innerHTML=h;
+  svg.querySelectorAll('.iclk-hitzone').forEach(el=>{
+    el.addEventListener('click',()=>onClickFn(parseInt(el.dataset.num)));
+    el.addEventListener('touchend',e=>{e.preventDefault();onClickFn(parseInt(el.dataset.num));},{passive:false});
+  });
+}
+
+function iclockBase(cx,cy,r){
+  let h=`<circle cx="${cx+3}" cy="${cy+4}" r="${r}" fill="rgba(0,0,0,.07)"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fdfcf8" stroke="#c8b89a" stroke-width="4"/>
+    <circle cx="${cx}" cy="${cy}" r="${r-5}" fill="none" stroke="#e8d8c0" stroke-width="1.5"/>`;
+  for(let i=1;i<=12;i++){const a=((i/12*360-90)*Math.PI/180);
+    h+=`<line x1="${cx+(r-7)*Math.cos(a)}" y1="${cy+(r-7)*Math.sin(a)}"
+      x2="${cx+(r-20)*Math.cos(a)}" y2="${cy+(r-20)*Math.sin(a)}"
+      stroke="#8899bb" stroke-width="3" stroke-linecap="round" pointer-events="none"/>`;}
+  for(let i=0;i<60;i++){if(i%5===0)continue;const a=((i/60*360-90)*Math.PI/180);
+    h+=`<line x1="${cx+(r-7)*Math.cos(a)}" y1="${cy+(r-7)*Math.sin(a)}"
+      x2="${cx+(r-13)*Math.cos(a)}" y2="${cy+(r-13)*Math.sin(a)}"
+      stroke="#ccd4e8" stroke-width="1.1" stroke-linecap="round" pointer-events="none"/>`;}
+  for(let i=1;i<=12;i++){const a=((i/12*360-90)*Math.PI/180);
+    h+=`<text x="${cx+(r-38)*Math.cos(a)}" y="${cy+(r-38)*Math.sin(a)}"
+      text-anchor="middle" dominant-baseline="central"
+      font-family="'Segoe UI',Tahoma,sans-serif" font-size="15" font-weight="800" fill="#04032B"
+      pointer-events="none">${i}</text>`;}
+  return h;
+}
+
+function numToXY(num,cx,cy,len){
+  const a=((num/12*360-90)*Math.PI/180);
+  return{x:cx+len*Math.cos(a),y:cy+len*Math.sin(a)};
+}
+
+// ═══ L4 CLICK LOGIC ═══
+function handleL4Click(num){
+  if(G.answered)return;
+  playSound('tap');
+  clickL4State(L4,num);
+  updateL4UI(false);
+}
+function handleTrainL4Click(num){
+  if(G.answered)return;
+  playSound('tap');
+  clickL4State(TrainL4,num);
+  updateL4UI(true);
+}
+function clickL4State(s,num){
+  if(s.mode==='hour'){
+    if(s.hourPlaced===num){s.hourPlaced=null;}
+    else{s.hourPlaced=num;if(s.minPlaced===num)s.minPlaced=null;s.mode='minute';}
+  } else if(s.mode==='minute'){
+    if(s.minPlaced===num){s.minPlaced=null;}
+    else if(s.hourPlaced===num){s.hourPlaced=null;s.mode='hour';}
+    else{s.minPlaced=num;s.mode='done';}
+  } else if(s.mode==='done'){
+    if(s.hourPlaced===num){s.hourPlaced=null;s.minPlaced=null;s.mode='hour';}
+    else if(s.minPlaced===num){s.minPlaced=null;s.mode='minute';}
+  }
+}
+
+function updateL4UI(training){
+  const s=training?TrainL4:L4;
+  const svgId=training?'train-iclk':'l4-clock';
+  const fn=training?handleTrainL4Click:handleL4Click;
+  drawInteractiveClock(svgId,s,fn);
+  const pfx=training?'train':'l4';
+  const lh=document.getElementById(pfx+'-lbl-hour');
+  const lm=document.getElementById(pfx+'-lbl-min');
+  if(s.hourPlaced!==null){lh.classList.add('placed');lh.classList.remove('next');lh.innerHTML=`<span>✅</span> Horas → ${s.hourPlaced}`;}
+  else{lh.classList.remove('placed');lh.innerHTML=`<span>${s.mode==='hour'?'👆':'⬛'}</span> Manilla de horas`;
+    if(s.mode==='hour')lh.classList.add('next');else lh.classList.remove('next');}
+  if(s.minPlaced!==null){lm.classList.add('placed');lm.classList.remove('next');lm.innerHTML=`<span>✅</span> Minutos → ${s.minPlaced}`;}
+  else{lm.classList.remove('placed');lm.innerHTML=`<span>${s.mode==='minute'?'👆':'—'}</span> Manilla de minutos`;
+    if(s.mode==='minute')lm.classList.add('next');else lm.classList.remove('next');}
+  const checkBtn=document.getElementById(training?'train-check':'l4-check');
+  if(checkBtn) checkBtn.style.display=(s.mode==='done')?'':'none';
+}
+
+// ═══ SPANISH TEXT ═══
+const HR=['','una','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce'];
+const MT={0:'en punto',5:'y cinco',10:'y diez',15:'y cuarto',20:'y veinte',25:'y veinticinco',
+  30:'y media',35:'menos veinticinco',40:'menos veinte',45:'menos cuarto',50:'menos diez',55:'menos cinco'};
+function timeToText(h,m){
+  let dH=h;if(m>30){dH=(h%12)+1;if(dH>12)dH=1;}
+  const hN=HR[dH],mT=MT[m];
+  if(dH===1)return m===0?'la una en punto':`la una ${mT}`;
+  return m===0?`las ${hN} en punto`:`las ${hN} ${mT}`;
+}
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();}
+function getAllAccepted(h,m){
+  const main=timeToText(h,m);const set=new Set([norm(main)]);
+  if(m===0)set.add(norm(main.replace(' en punto','')));
+  if(main.startsWith('la una')){set.add(norm(main.replace('la una','las una')));
+    if(m===0)set.add(norm(main.replace(' en punto','').replace('la una','las una')));}
+  if(m===15)set.add(norm(main.replace('y cuarto','y un cuarto')));
+  if(m===45)set.add(norm(main.replace('menos cuarto','menos un cuarto')));
+  if(m===30)set.add(norm(main.replace('y media','y treinta')));
+  return[...set];
+}
+function isCorrect(input,h,m){return getAllAccepted(h,m).includes(norm(input));}
+
+// ═══ DOTS ═══
+function renderDots(id,results){
+  const c=document.getElementById(id);c.innerHTML='';
+  for(let i=0;i<5;i++){const d=document.createElement('div');d.className='dot';
+    if(i<results.length)d.classList.add(results[i]);else if(i===results.length)d.classList.add('current');
+    c.appendChild(d);}
+}
+
+// ═══ SCREEN ═══
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ═══ SHAKE ═══
+function shake(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');
+  el.addEventListener('animationend',()=>el.classList.remove('shake'),{once:true});}
+
+// ═══════════════════════════════
+// AUTO-ADVANCE: correct answers
+// move to next question without "Siguiente" button click
+// ═══════════════════════════════
+const AUTO_DELAY = 1100; // ms before auto-advancing
+
+// ═══ LEVEL 1 ═══
+function startLevel1(){G.level=1;G.question=0;G.scores[0]=0;G.results[0]=[];showScreen('screen-level1');loadL1();}
+function loadL1(){
+  const t=rndTime();G.curH=t.h;G.curM=t.m;G.answered=false;
+  renderDots('l1-dots',G.results[0]);document.getElementById('l1-score').textContent=G.scores[0];
+  document.getElementById('l1-h').value='';document.getElementById('l1-m').value='';
+  document.getElementById('l1-feedback').className='feedback-box';
+  document.getElementById('l1-check').style.display='';document.getElementById('l1-next').style.display='none';
+  drawClock('l1-clock',t.h,t.m);animClock('l1-clock-wrap');document.getElementById('l1-h').focus();
+}
+function checkLevel1(){
+  if(G.answered)return;
+  const hv=parseInt(document.getElementById('l1-h').value),mv=parseInt(document.getElementById('l1-m').value);
+  const okH=hv===G.curH||(G.curH<12&&hv===G.curH+12)||(G.curH===12&&hv===0);
+  const ok=okH&&mv===G.curM;
+  G.answered=true;
+  const fb=document.getElementById('l1-feedback');
+  const hS=String(G.curH).padStart(2,'0'),mS=String(G.curM).padStart(2,'0');
+  const alt=(G.curH+12<=23)?' o <strong>'+String(G.curH+12).padStart(2,'0')+':'+mS+'</strong>':'';
+  if(ok){
+    fb.className='feedback-box correct';fb.innerHTML=`✅ ¡Correcto! La hora es <strong>${hS}:${mS}</strong>${alt}`;
+    playSound('correcto');
+    G.results[0].push('correct');G.scores[0]++;
+    renderDots('l1-dots',G.results[0]);document.getElementById('l1-score').textContent=G.scores[0];
+    document.getElementById('l1-check').style.display='none';
+    if(G.question<4) setTimeout(()=>nextL1(),AUTO_DELAY);
+    else setTimeout(()=>startLevel2(),AUTO_DELAY);
+  } else {
+    fb.className='feedback-box wrong';fb.innerHTML=`❌ Debías escribir <strong>${hS}:${mS}</strong>${alt}`;
+    playSound('error');shake(document.querySelector('#screen-level1 .game-content'));
+    G.results[0].push('wrong');
+    renderDots('l1-dots',G.results[0]);document.getElementById('l1-score').textContent=G.scores[0];
+    document.getElementById('l1-check').style.display='none';
+    // Show next button on wrong
+    if(G.question<4){document.getElementById('l1-next').style.display='';document.getElementById('l1-next').focus();}
+    else setTimeout(()=>startLevel2(),AUTO_DELAY);
+  }
+}
+function nextL1(){playSound('tap');G.question++;loadL1();}
+
+// ═══ LEVEL 2 ═══
+function startLevel2(){G.level=2;G.question=0;G.scores[1]=0;G.results[1]=[];showScreen('screen-level2');loadL2();}
+function loadL2(){
+  const t=rndTime();G.curH=t.h;G.curM=t.m;G.answered=false;
+  renderDots('l2-dots',G.results[1]);document.getElementById('l2-score').textContent=G.scores[1];
+  document.getElementById('l2-answer').value='';document.getElementById('l2-feedback').className='feedback-box';
+  document.getElementById('l2-check').style.display='';document.getElementById('l2-next').style.display='none';
+  drawClock('l2-clock',t.h,t.m);animClock('l2-clock-wrap');document.getElementById('l2-answer').focus();
+}
+function checkLevel2(){
+  if(G.answered)return;
+  const ok=isCorrect(document.getElementById('l2-answer').value,G.curH,G.curM);
+  G.answered=true;
+  doFeedbackText('l2-feedback','screen-level2',ok,G.curH,G.curM);
+  G.results[1].push(ok?'correct':'wrong');if(ok)G.scores[1]++;
+  renderDots('l2-dots',G.results[1]);document.getElementById('l2-score').textContent=G.scores[1];
+  document.getElementById('l2-check').style.display='none';
+  if(ok){
+    if(G.question<4)setTimeout(()=>nextL2(),AUTO_DELAY);else setTimeout(()=>startLevel3(),AUTO_DELAY);
+  } else {
+    if(G.question<4){document.getElementById('l2-next').style.display='';document.getElementById('l2-next').focus();}
+    else setTimeout(()=>startLevel3(),AUTO_DELAY);
+  }
+}
+function nextL2(){playSound('tap');G.question++;loadL2();}
+
+// ═══ LEVEL 3 ═══
+function startLevel3(){G.level=3;G.question=0;G.scores[2]=0;G.results[2]=[];showScreen('screen-level3');loadL3();}
+function loadL3(){
+  const t=rndTime();G.curH=t.h;G.curM=t.m;G.answered=false;
+  renderDots('l3-dots',G.results[2]);document.getElementById('l3-score').textContent=G.scores[2];
+  document.getElementById('l3-answer').value='';document.getElementById('l3-feedback').className='feedback-box';
+  document.getElementById('l3-check').style.display='';document.getElementById('l3-next').style.display='none';
+  document.getElementById('l3-digital').textContent=String(G.curH).padStart(2,'0')+':'+String(G.curM).padStart(2,'0');
+  document.getElementById('l3-answer').focus();
+}
+function checkLevel3(){
+  if(G.answered)return;
+  const ok=isCorrect(document.getElementById('l3-answer').value,G.curH,G.curM);
+  G.answered=true;
+  doFeedbackText('l3-feedback','screen-level3',ok,G.curH,G.curM);
+  G.results[2].push(ok?'correct':'wrong');if(ok)G.scores[2]++;
+  renderDots('l3-dots',G.results[2]);document.getElementById('l3-score').textContent=G.scores[2];
+  document.getElementById('l3-check').style.display='none';
+  if(ok){
+    if(G.question<4)setTimeout(()=>nextL3(),AUTO_DELAY);else setTimeout(()=>startLevel4(),AUTO_DELAY);
+  } else {
+    if(G.question<4){document.getElementById('l3-next').style.display='';document.getElementById('l3-next').focus();}
+    else setTimeout(()=>startLevel4(),AUTO_DELAY);
+  }
+}
+function nextL3(){playSound('tap');G.question++;loadL3();}
+
+// ═══ LEVEL 4 ═══
+function startLevel4(){G.level=4;G.question=0;G.scores[3]=0;G.results[3]=[];showScreen('screen-level4');loadL4();}
+function loadL4(){
+  const t=rndTimeSafe();G.curH=t.h;G.curM=t.m;G.answered=false;
+  L4={hourPlaced:null,minPlaced:null,mode:'hour'};
+  renderDots('l4-dots',G.results[3]);document.getElementById('l4-score').textContent=G.scores[3];
+  document.getElementById('l4-digital').textContent=String(t.h).padStart(2,'0')+':'+String(t.m).padStart(2,'0');
+  document.getElementById('l4-feedback').className='feedback-box';
+  document.getElementById('l4-check').style.display='none';document.getElementById('l4-next').style.display='none';
+  const lh=document.getElementById('l4-lbl-hour'),lm=document.getElementById('l4-lbl-min');
+  lh.classList.remove('placed');lh.classList.add('next');lh.innerHTML='<span>👆</span> Manilla de horas';
+  lm.classList.remove('placed','next');lm.innerHTML='<span>—</span> Manilla de minutos';
+  drawInteractiveClock('l4-clock',L4,handleL4Click);
+  const w=document.getElementById('l4-clock-wrap');w.classList.remove('iclk-wrap');void w.offsetWidth;w.classList.add('iclk-wrap');
+}
+function resetL4(){playSound('tap');if(G.answered)return;L4={hourPlaced:null,minPlaced:null,mode:'hour'};updateL4UI(false);}
+function checkLevel4(){
+  if(G.answered||L4.mode!=='done')return;
+  const ok=L4.hourPlaced===G.curH&&L4.minPlaced===MIN_TO_NUM[G.curM];
+  G.answered=true;
+  doFeedbackL4('l4-feedback','screen-level4',ok,G.curH,G.curM);
+  G.results[3].push(ok?'correct':'wrong');if(ok)G.scores[3]++;
+  renderDots('l4-dots',G.results[3]);document.getElementById('l4-score').textContent=G.scores[3];
+  document.getElementById('l4-check').style.display='none';document.getElementById('l4-reset').style.display='none';
+  if(ok){
+    if(G.question<4)setTimeout(()=>nextL4(),AUTO_DELAY);else setTimeout(()=>showFinal(),AUTO_DELAY);
+  } else {
+    if(G.question<4){document.getElementById('l4-next').style.display='';document.getElementById('l4-next').focus();}
+    else setTimeout(()=>showFinal(),AUTO_DELAY);
+  }
+}
+function nextL4(){playSound('tap');G.question++;loadL4();}
+
+// ═══ FEEDBACK HELPERS ═══
+function doFeedbackText(fbId,screenId,ok,h,m){
+  const fb=document.getElementById(fbId);const correct=timeToText(h,m);
+  if(ok){fb.className='feedback-box correct';fb.innerHTML=`✅ ¡Correcto! Se dice: <strong>"${correct}"</strong>`; playSound('correcto');}
+  else{fb.className='feedback-box wrong';fb.innerHTML=`❌ Deberías escribir: <strong>"${correct}"</strong>`;playSound('error');shake(document.querySelector('#'+screenId+' .game-content'));}
+}
+function doFeedbackL4(fbId,screenId,ok,h,m){
+  const fb=document.getElementById(fbId);
+  const hN=h,mN=MIN_TO_NUM[m],mS=String(m).padStart(2,'0');
+  if(ok){fb.className='feedback-box correct';fb.innerHTML=`✅ ¡Correcto! Horas → <strong>${hN}</strong>, Minutos → <strong>${mN}</strong>`;playSound('correcto');}
+  else{fb.className='feedback-box wrong';fb.innerHTML=`❌ Incorrecto. Horas → <strong>${hN}</strong>, Minutos → <strong>${mN}</strong> (${String(h).padStart(2,'0')}:${mS})`;playSound('error');shake(document.querySelector('#'+screenId+' .game-content'));}
+}
+
+// ═══ FINAL ═══
+function showFinal(){
+  stopTimer();showScreen('finalScreen');
+  const s=G.scores;
+  // Formula: average of per-level accuracy × 100
+  const pts=Math.round(((s[0]/5)+(s[1]/5)+(s[2]/5)+(s[3]/5))/4*100);
+  document.getElementById('final-pts').textContent=pts;
+  document.getElementById('f-s1').textContent=s[0];document.getElementById('f-s2').textContent=s[1];
+  document.getElementById('f-s3').textContent=s[2];document.getElementById('f-s4').textContent=s[3];
+  document.getElementById('final-time').textContent=fmtTime(timerSecs);
+  if(pts===100){
+    document.getElementById('trophy').classList.add('show');
+    document.getElementById('final-msg').textContent='¡Enhorabuena, puntuación máxima!';
+    document.getElementById('final-msg').style.color='#15803d';
+    playSound('victoria');launchConfetti(100);
+  } else {
+    document.getElementById('trophy').classList.remove('show');
+    document.getElementById('final-msg').textContent='¡Buen trabajo! Sigue practicando';
+    playSound('completado');launchConfetti(35);
+  }
+}
+
+// ═══ TRAINING ═══
+function startTraining(level){
+  playSound('tap');G.trainLevel=level;G.streak=0;G.answered=false;
+  showScreen('screen-training');
+  const cols=['var(--blue-main)','#0d9488','#7c3aed','#6d28d9'];
+  const badge=document.getElementById('train-badge');badge.style.background=cols[level-1];
+  badge.textContent=`♾️ Entrenamiento Nivel ${level}`;
+  const instrs=['🕐 ¿Qué hora marca el reloj? Escribe los dígitos',
+    '✍️ ¿Qué hora marca el reloj? Escríbela con palabras',
+    '💬 ¿Cómo se dice esta hora con palabras?','🖱️ Coloca las manillas del reloj'];
+  document.getElementById('train-instruction').textContent=instrs[level-1];
+  loadTraining();
+}
+function loadTraining(){
+  const t=(G.trainLevel===4)?rndTimeSafe():rndTime();
+  G.curH=t.h;G.curM=t.m;G.answered=false;
+  document.getElementById('streak-val').textContent=G.streak;
+  document.getElementById('train-feedback').className='feedback-box';
+  document.getElementById('train-check').style.display='';document.getElementById('train-next').style.display='none';
+  ['train-clock-wrap','train-digital-wrap','train-digit-wrap','train-text-wrap','train-l4-status','train-iclk-wrap','train-l4-reset']
+    .forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  if(G.trainLevel===1){
+    document.getElementById('train-clock-wrap').style.display='';document.getElementById('train-digit-wrap').style.display='';
+    drawClock('train-clock',t.h,t.m);animClock('train-clock-wrap');
+    document.getElementById('train-h').value='';document.getElementById('train-m').value='';
+    document.getElementById('train-h').focus();
+  } else if(G.trainLevel===2){
+    document.getElementById('train-clock-wrap').style.display='';document.getElementById('train-text-wrap').style.display='';
+    document.getElementById('train-hint').textContent='Ej: "las tres y cuarto", "las doce menos veinte"';
+    drawClock('train-clock',t.h,t.m);animClock('train-clock-wrap');
+    document.getElementById('train-answer').value='';document.getElementById('train-answer').focus();
+  } else if(G.trainLevel===3){
+    document.getElementById('train-digital-wrap').style.display='';document.getElementById('train-text-wrap').style.display='';
+    document.getElementById('train-hint').textContent='Ej: "las seis y media", "las dos menos cuarto"';
+    document.getElementById('train-digital').textContent=String(t.h).padStart(2,'0')+':'+String(t.m).padStart(2,'0');
+    document.getElementById('train-answer').value='';document.getElementById('train-answer').focus();
+  } else {
+    TrainL4={hourPlaced:null,minPlaced:null,mode:'hour'};
+    document.getElementById('train-digital-wrap').style.display='';document.getElementById('train-l4-status').style.display='';
+    document.getElementById('train-iclk-wrap').style.display='';document.getElementById('train-l4-reset').style.display='';
+    document.getElementById('train-check').style.display='none';
+    document.getElementById('train-digital').textContent=String(t.h).padStart(2,'0')+':'+String(t.m).padStart(2,'0');
+    const lh=document.getElementById('train-lbl-hour'),lm=document.getElementById('train-lbl-min');
+    lh.classList.remove('placed');lh.classList.add('next');lh.innerHTML='<span>👆</span> Manilla de horas';
+    lm.classList.remove('placed','next');lm.innerHTML='<span>—</span> Manilla de minutos';
+    drawInteractiveClock('train-iclk',TrainL4,handleTrainL4Click);
+    const w=document.getElementById('train-iclk-wrap');w.classList.remove('iclk-wrap');void w.offsetWidth;w.classList.add('iclk-wrap');
+  }
+}
+function resetTrainL4(){playSound('tap');if(G.answered)return;TrainL4={hourPlaced:null,minPlaced:null,mode:'hour'};updateL4UI(true);}
+function checkTraining(){
+  if(G.answered)return;
+  let ok=false;const h=G.curH,m=G.curM;
+  if(G.trainLevel===1){
+    const hv=parseInt(document.getElementById('train-h').value),mv=parseInt(document.getElementById('train-m').value);
+    const okH=hv===h||(h<12&&hv===h+12)||(h===12&&hv===0);ok=okH&&mv===m;
+    const fb=document.getElementById('train-feedback');
+    const hS=String(h).padStart(2,'0'),mS=String(m).padStart(2,'0');
+    const alt=(h+12<=23)?' o <strong>'+String(h+12).padStart(2,'0')+':'+mS+'</strong>':'';
+    if(ok){fb.className='feedback-box correct';fb.innerHTML=`✅ ¡Correcto! <strong>${hS}:${mS}</strong>${alt}`;playSound('correcto');}
+    else{fb.className='feedback-box wrong';fb.innerHTML=`❌ Debías escribir <strong>${hS}:${mS}</strong>${alt}`;playSound('error');shake(document.querySelector('#screen-training .game-content'));}
+  } else if(G.trainLevel===4){
+    ok=TrainL4.hourPlaced===h&&TrainL4.minPlaced===MIN_TO_NUM[m];
+    doFeedbackL4('train-feedback','screen-training',ok,h,m);
+  } else {
+    ok=isCorrect(document.getElementById('train-answer').value,h,m);
+    doFeedbackText('train-feedback','screen-training',ok,h,m);
+  }
+  if(ok)G.streak++;else G.streak=0;
+  document.getElementById('streak-val').textContent=G.streak;
+  G.answered=true;document.getElementById('train-check').style.display='none';
+  document.getElementById('train-l4-reset').style.display='none';
+  if(ok){setTimeout(()=>nextTraining(),AUTO_DELAY);}
+  else{document.getElementById('train-next').style.display='';document.getElementById('train-next').focus();}
+}
+function nextTraining(){playSound('tap');loadTraining();}
+function goToFinal(){playSound('tap');showScreen('finalScreen');}
+
+// ═══ NAV ═══
+function startGame(){
+  playSound('tap');G.scores=[0,0,0,0];G.results=[[],[],[],[]];
+  startTimer();startLevel1();
+}
+function goHome(){
+  playSound('tap');stopTimer();
+  document.getElementById('timer-pill').style.visibility='hidden';
+  showScreen('startScreen');
+}
+
+// ═══ CONFETTI ═══
+function launchConfetti(count){
+  const c=document.getElementById('confetti-container');
+  const cols=['#001DFF','#f59e42','#0d9488','#22a94e','#e91e63','#7c3aed','#00bcd4'];
+  for(let i=0;i<count;i++){
+    const p=document.createElement('div');p.className='cp';
+    p.style.cssText=`left:${Math.random()*100}vw;width:${Math.random()*10+5}px;
+      height:${Math.random()*10+5}px;background:${cols[Math.floor(Math.random()*cols.length)]};
+      border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${Math.random()*2.5+1.5}s;
+      animation-delay:${Math.random()*.8}s;transform:rotate(${Math.random()*360}deg);opacity:1;`;
+    c.appendChild(p);setTimeout(()=>p.remove(),5000);}
+}
+
+// ═══ KEYBOARD ═══
+// Level 1
+document.getElementById('l1-h').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();if(!G.answered)checkLevel1();else if(document.getElementById('l1-next').style.display!=='none')nextL1();}
+  if(e.key==='Tab'){e.preventDefault();document.getElementById('l1-m').focus();}
+});
+document.getElementById('l1-h').addEventListener('input',function(){if(this.value.length===2)document.getElementById('l1-m').focus();});
+document.getElementById('l1-m').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();if(!G.answered)checkLevel1();else if(document.getElementById('l1-next').style.display!=='none')nextL1();}
+});
+
+// ── SMART BACKSPACE: when minute field is empty, delete from hour field ──
+document.getElementById('l1-m').addEventListener('keydown',e=>{
+  if(e.key==='Backspace'&&document.getElementById('l1-m').value===''){
+    e.preventDefault();
+    const hEl=document.getElementById('l1-h');
+    hEl.value=hEl.value.slice(0,-1);hEl.focus();
+  }
+});
+document.getElementById('train-m').addEventListener('keydown',e=>{
+  if(e.key==='Backspace'&&document.getElementById('train-m').value===''){
+    e.preventDefault();
+    const hEl=document.getElementById('train-h');
+    hEl.value=hEl.value.slice(0,-1);hEl.focus();
+  }
+});
+
+// Level 2
+document.getElementById('l2-answer').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();if(!G.answered)checkLevel2();else if(document.getElementById('l2-next').style.display!=='none')nextL2();}
+});
+// Level 3
+document.getElementById('l3-answer').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();if(!G.answered)checkLevel3();else if(document.getElementById('l3-next').style.display!=='none')nextL3();}
+});
+// Training
+document.getElementById('train-h').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();if(!G.answered)checkTraining();else if(document.getElementById('train-next').style.display!=='none')nextTraining();}
+  if(e.key==='Tab'){e.preventDefault();document.getElementById('train-m').focus();}
+});
+document.getElementById('train-h').addEventListener('input',function(){if(this.value.length===2)document.getElementById('train-m').focus();});
+document.getElementById('train-m').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();if(!G.answered)checkTraining();else if(document.getElementById('train-next').style.display!=='none')nextTraining();}
+});
+document.getElementById('train-answer').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();if(!G.answered)checkTraining();else if(document.getElementById('train-next').style.display!=='none')nextTraining();}
+});
+</script>
+</body>
+</html>
